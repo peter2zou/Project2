@@ -22,10 +22,12 @@
     $locationProvider.html5Mode(true);
 }])
 .factory("dataService", ["$http", "$q", function ($http, $q) {
-      var _getAds = function (url) {
+      var obj = {};
+      obj.getAds = function (url) {
           var deferred = $q.defer();
           $http.get(url).then(
             function (result) {
+                _ads=result.data;
                 deferred.resolve(result.data);
             },
             function () {
@@ -33,12 +35,46 @@
             });
           return deferred.promise;
       };
-      return {
-          getAds: _getAds
+      obj.getMyPageData = function (adData, $scope, pageType) {
+          switch (pageType) {
+              case 'all':
+                  $scope.ads = adData.AdItems;
+                  $scope.totalItems = $scope.ads.length;
+                  break;
+              case 'cover50':
+                  $scope.ads = adData.AdItems.filter(function (adItem) {
+                      return adItem.Position == 'Cover' && adItem.NumPages >= 0.5;
+                  });
+                  $scope.totalItems = $scope.ads.length;
+                  break;
+              case 'top5ads':
+                  $scope.ads = adData.Top5Ads;
+                  break;
+              case 'top5brands':
+                  $scope.ads = adData.Top5Brands;
+                  break;
+          }
       };
+      obj.getPageData = function ($window, $scope, pageType) {
+          if (!$window.sessionStorage.getItem("AdData")) {
+              obj.getAds('api/AdDataService').then(
+              function (result) {
+                  $window.sessionStorage.setItem("AdData", JSON.stringify(result));
+                  obj.getMyPageData(result, $scope, pageType)
+              },
+              function () {
+                  alert("Error: unable to get data");
+              });
+          }
+          else {
+              var result = JSON.parse($window.sessionStorage.getItem("AdData"));
+              obj.getMyPageData(result, $scope, pageType);
+          }
+      };
+      return obj;
   }])
- .controller("adDataAllCtrl", ["$scope", "dataService",
-        function ($scope, dataService) {
+ .controller("adDataAllCtrl", ["$scope", "dataService","$window",
+    function ($scope, dataService,$window) {
             $scope.ads = [];
             $scope.totalItems = $scope.ads.length;
             $scope.sortKey = 'BrandName';
@@ -49,19 +85,11 @@
                 $scope.sortKey = sortKey;
             };
             $scope.pageSize = 10;
-            dataService.getAds('api/AdDataService/GetAll').then(
-            function (result) {
-                $scope.ads = result;
-                $scope.totalItems = $scope.ads.length;
-            },
-            function () {
-                alert("Error: unable to get data");
-            });
-  }])
- .controller("adDataCoverCtrl", ["$scope", "dataService",
-         function ($scope, dataService) {
+            dataService.getPageData($window, $scope, 'all');
+   }])
+ .controller("adDataCoverCtrl", ["$scope", "dataService", "$window",
+    function ($scope, dataService, $window) {
             $scope.ads = [];
-            $scope.totalItems = $scope.ads.length;
             $scope.sortKey = 'BrandName';
             $scope.sortReverse = false;
             $scope.currentPage = 1;
@@ -70,43 +98,22 @@
                 $scope.sortKey = sortKey;
             };
             $scope.pageSize = 10;
-            dataService.getAds('api/AdDataService/GetCover').then(
-            function (result) {
-                $scope.ads = result;
-                $scope.totalItems = $scope.ads.length;
-            },
-            function () {
-                alert("Error occured: unable to get data");
-            });
+            dataService.getPageData($window, $scope,'cover50');
   }])
- .controller("adDataTop5AdsCtrl", ["$scope", "dataService",
-        function ($scope, dataService) {
+ .controller("adDataTop5AdsCtrl", ["$scope", "dataService","$window",
+    function ($scope, dataService,$window) {
             $scope.ads = [];
             $scope.sortKey = 'NumPages';
             $scope.sortReverse = true;
             $scope.pageSize = 5;
-            dataService.getAds('api/AdDataService/GetTop5Ads').then(
-            function (result) {
-                $scope.ads = result;
-            },
-            function () {
-                alert("an error occured: unable to get data");
-            });
+            dataService.getPageData($window, $scope,'top5ads');
   }])
- .controller("adDataTop5BrandsCtrl", ["$scope", "dataService",
-        function ($scope, dataService) {
+ .controller("adDataTop5BrandsCtrl", ["$scope", "dataService", "$window",
+    function ($scope, dataService, $window) {
             $scope.ads = [];
             $scope.sortKey = 'NumPages';
             $scope.sortReverse = true;
             $scope.pageSize = 5;
-            dataService.getAds('api/AdDataService/GetTop5ByBrands').then(
-            function (result) {
-                $scope.ads = result;
-            },
-            function () {
-                alert("Error occured: unable to get data");
-            });
- }]);
-
-
+            dataService.getPageData($window, $scope,'top5brands');
+   }]);
 

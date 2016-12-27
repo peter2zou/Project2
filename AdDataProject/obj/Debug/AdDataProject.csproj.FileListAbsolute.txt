@@ -145,3 +145,4 @@ C:\Projects\AdDataProject\AdDataProject\bin\System.Web.WebPages.Razor.xml
 C:\Projects\AdDataProject\AdDataProject\bin\Antlr3.Runtime.pdb
 C:\Projects\AdDataProject\AdDataProject\obj\Debug\WebApplication3.dll
 C:\Projects\AdDataProject\AdDataProject\obj\Debug\WebApplication3.pdb
+C:\Projects\AdDataProject\AdDataProject\obj\Debug\AdDataProject.csprojResolveAssemblyReference.cache

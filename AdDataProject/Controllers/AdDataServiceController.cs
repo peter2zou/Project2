@@ -4,56 +4,39 @@ using System.Linq;
 using System.Web.Http;
 using AdDataProject.AdDataService;
 
-
 namespace AdDataProject.Controllers
 {
     public class AdDataServiceController : ApiController
     {
-        [Route("api/AdDataService/GetAll")]
-        public IEnumerable<AdItem> GetAll()
+        public AdDataAggregation Get()
         {
-            return GetSampleAdData().AsEnumerable<AdItem>();
-        }
-
-        [Route("api/AdDataService/GetCover")]
-        public IEnumerable<AdItem> GetCover()
-        {
-            return GetSampleAdData().Where(r => r.Position == "Cover" && r.NumPages >= (decimal)0.5).AsEnumerable<AdItem>();
-        }
-
-        [Route("api/AdDataService/GetTop5Ads")]
-        public IEnumerable<AdItem> GetTop5Ads()
-        {
-            return GetSampleAdData().GroupBy(r => new { r.AdId, r.BrandId, r.BrandName })
-            .Select(g =>
-                   new AdItem
-                   {
-                       AdId = g.Key.AdId,
-                       BrandId = g.Key.BrandId,
-                       BrandName = g.Key.BrandName,
-                       NumPages = g.Sum(i => i.NumPages),
-                       Position = ""
-                   })
-             .OrderByDescending(r => r.NumPages)
-             .ThenBy(r => r.AdId)
-             .ThenBy(r => r.BrandName).AsEnumerable<AdItem>(); ;
-        }
-
-        [Route("api/AdDataService/GetTop5ByBrands")]
-        public IEnumerable<AdItem> GetTop5ByBrands()
-        {
-            return GetSampleAdData().GroupBy(r => new { r.BrandName, r.BrandId })
-            .Select(g =>
-                   new AdItem
-                   {
-                       AdId = 0,
-                       BrandId = g.Key.BrandId,
-                       BrandName = g.Key.BrandName,
-                       NumPages = g.Sum(i => i.NumPages),
-                       Position = ""
-                   })
-             .OrderByDescending(r => r.NumPages)
-             .ThenBy(r => r.BrandName).Take(5).AsEnumerable<AdItem>();
+            List<AdItem> ads=GetSampleAdData();
+            List<AdItem> top5Ads = ads.GroupBy(r => new { r.AdId, r.BrandId, r.BrandName })
+                                    .Select(g =>
+                                           new AdItem
+                                           {
+                                               AdId = g.Key.AdId,
+                                               BrandId = g.Key.BrandId,
+                                               BrandName = g.Key.BrandName,
+                                               NumPages = g.Sum(i => i.NumPages),
+                                               Position = ""
+                                           })
+                                     .OrderByDescending(r => r.NumPages)
+                                     .ThenBy(r => r.AdId)
+                                     .ThenBy(r => r.BrandName).Take(5).ToList<AdItem>();
+            List<AdItem> top5Brands = ads.GroupBy(r => new { r.BrandName, r.BrandId })
+                                         .Select(g =>
+                                                new AdItem
+                                                {
+                                                    AdId = 0,
+                                                    BrandId = g.Key.BrandId,
+                                                    BrandName = g.Key.BrandName,
+                                                    NumPages = g.Sum(i => i.NumPages),
+                                                    Position = ""
+                                                })
+                                          .OrderByDescending(r => r.NumPages)
+                                          .ThenBy(r => r.BrandName).Take(5).ToList<AdItem>();
+            return new AdDataAggregation { AdItems = ads, Top5Ads = top5Ads, Top5Brands = top5Brands };
         }
 
         private List<AdItem> GetSampleAdData()
@@ -72,5 +55,12 @@ namespace AdDataProject.Controllers
         public string BrandName { set; get; }
         public decimal NumPages { set; get; }
         public string Position { set; get; }
+    }
+
+    public class AdDataAggregation
+    {
+        public List<AdItem> AdItems { get; set; }
+        public List<AdItem> Top5Ads { get; set; }
+        public List<AdItem> Top5Brands { get; set; }
     }
 }
