@@ -1,0 +1,53 @@
+﻿<div>
+    <h1>Cover Ads Data</h1>
+    <div class="container-fluid">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="#" ng-click="order('AdId')">
+                            AdId
+                            <span ng-show="sortKey=='AdId'" class="glyphicon sort-icon" ng-class="{'glyphicon-chevron-up':reverse,'glyphicon-chevron-down':!reverse}"></span>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="" ng-click="order('BrandId')">
+                            BrandId
+                            <span ng-show="sortKey=='BrandId'" class="glyphicon sort-icon" ng-class="{'glyphicon-chevron-up':sortReverse,'glyphicon-chevron-down':!sortReverse}"></span>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="" ng-click="order('BrandName')">
+                            BrandName
+                            <span ng-show="sortKey=='BrandName'" class="glyphicon sort-icon" ng-class="{'glyphicon-chevron-up':sortReverse,'glyphicon-chevron-down':!sortReverse}"></span>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="" ng-click="order('NumPages')">
+                            NumPages
+                            <span ng-show="sortKey=='NumPages'" class="glyphicon sort-icon" ng-class="{'glyphicon-chevron-up':sortReverse,'glyphicon-chevron-down':!sortReverse}"></span>
+                        </a>
+                    </th>
+                    <th>
+                        <a href="" ng-click="order('Position')">
+                            Position
+                            <span ng-show="sortKey=='Position'" class="glyphicon sort-icon" ng-class="{'glyphicon-chevron-up':sortReverse,'glyphicon-chevron-down':!sortReverse}"></span>
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="ad in ads | orderBy:sortKey:sortReverse | limitTo:pageSize: (currentPage-1)*pageSize" ng-class-odd="'odd'">
+                    <td>{{ ad.AdId}}</td>
+                    <td>{{ ad.BrandId}}</td>
+                    <td>{{ ad.BrandName}}</td>
+                    <td>{{ ad.NumPages}}</td>
+                    <td>{{ ad.Position}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <ul uib-pagination total-items="totalItems" ng-model="currentPage" max-size="10" class="pagination-sm" boundary-links="true" rotate="false"></ul>
+
+    </div>
+</div>
